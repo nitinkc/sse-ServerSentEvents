@@ -29,15 +29,19 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-          cache: 'pip'
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: uv sync --frozen
 
       - name: Build docs
         # --strict turns the link/anchor warnings configured in mkdocs.yml into
         # build failures, so a broken cross-reference can't reach the site.
-        run: mkdocs build --strict
+        run: uv run --frozen mkdocs build --strict
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
