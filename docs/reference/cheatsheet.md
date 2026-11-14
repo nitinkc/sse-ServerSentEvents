@@ -81,6 +81,43 @@ curl -XPOST -d '{"text":"hi"}' -H 'Content-Type: application/json' \
      localhost:8765/publish                          # write path
 ```
 
+## What makes a server SSE-capable
+
+SSE is **plain HTTP** — no new protocol, no handshake, no framing. Any HTTP
+server that can do these three things can serve SSE:
+
+1. **Hold a response open** — never send `Content-Length`, never terminate
+   the body. The response just doesn't end.
+2. **Flush on demand** — each `write()` must reach the socket NOW. Buffered
+   output is the #1 bug: if your framework buffers the response body, SSE
+   silently delivers nothing (look for a `flush()` call or a
+   "streaming response" API).
+3. **One long-lived connection per client** — so the server must handle
+   many concurrent connections: threads, async, or event loop — anything
+   that doesn't block the whole server on one client.
+
+That's it. `python3 -m http.server` can't do it (no app code), but
+`http.server` + a handler that loops-and-flushes can — see
+`demo/server.py` in the repo ([anatomy](../build/server-anatomy.md)).
+
+Works over HTTP/1.1 (keep-alive) and HTTP/2+ (streams fix the ~6 conns/origin
+limit). No TLS, upgrade, or special library required.
+
+### vs. WebSocket — the bar is much higher
+
+| | SSE | WebSocket |
+| --- | --- | --- |
+| Protocol | Plain HTTP/1.1+, response never ends | New protocol (`ws://`), RFC 6455 |
+| Handshake | None — just GET + response headers | `101 Switching Protocols` + `Upgrade:`/`Sec-WebSocket-*` headers + SHA-1 accept key |
+| Framing | UTF-8 text lines, blank line = dispatch | Binary frame protocol: opcodes, FIN bit, masking, ping/pong, close frames |
+| Server needs | HTTP + `flush()` | Frame parser/serializer — realistically a library (`websockets`, `ws`, `gorilla/websocket`) |
+| Proxy/LB | Passes as normal HTTP; disable buffering (`X-Accel-Buffering: no`) | Must explicitly support `Upgrade` (nginx `proxy_set_header Upgrade/Connection`) |
+| Direction | Server→client only | Full duplex |
+| Payload | UTF-8 text (JSON) | Text **and** binary |
+
+Rule of thumb: **SSE = any HTTP stack. WebSocket = you need a WebSocket-aware
+server/library and infrastructure that tolerates the Upgrade handshake.**
+
 ## When to use what
 
 | Need | Tool |
