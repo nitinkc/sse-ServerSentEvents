@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SSE Studio — live updates, made simple</title>
+  <link rel="icon" href="data:," />
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header>
+      <a class="brand" href="/clock"><span class="brand-mark">S</span> SSE Studio <span class="brand-label">INTERACTIVE LAB</span></a>
+      <div class="controls">
+        <span id="status" class="pill connecting" role="status">connecting</span>
+        <button id="reconnect">Connect</button>
+        <button id="disconnect" class="quiet">Disconnect</button>
+      </div>
+    </header>
+    <section class="hero">
+      <p class="eyebrow">SMALL EXAMPLES. ONE BIG IDEA.</p>
+      <h1>Live updates.<br /><span>Without the complexity.</span></h1>
+      <p>One request stays open. The server sends something new.<br class="desktop-break" /> Your page updates. Explore one example at a time.</p>
+    </section>
+    <nav class="tabs" aria-label="SSE example pages">
+      <a href="/clock" data-page="clock"><span>01</span> Clock</a>
+      <a href="/stocks" data-page="stocks"><span>02</span> Stocks</a>
+      <a href="/chat" data-page="chat"><span>03</span> Chat</a>
+      <a href="/connection" data-page="connection"><span>04</span> Connection</a>
+    </nav>
+    <main>
+      <aside class="card network-guide">
+        <p class="eyebrow">WATCH IT IN DEVTOOLS</p>
+        <h2>See the requests, not just the result.</h2>
+        <p>Open DevTools → Network. Select <strong>All</strong> (not just Fetch/XHR) and enable <strong>Preserve log</strong>. Click a page link above to see a new document request and a fresh event stream.</p>
+        <p id="network-experiment"></p>
+        <p class="hint">A pending SSE request is normal: the response is still open. Select it to inspect Headers and EventStream (or the browser's streaming response view).</p>
+      </aside>
+      <section id="panel-clock" data-panel="clock" aria-label="Clock example">
+        <div class="section-heading"><div><p class="eyebrow">START HERE</p><h2>A clock, powered by the server.</h2></div><span class="badge">tick · every second</span></div>
+        <div class="panel-grid">
+          <article class="card clock-card"><p class="eyebrow">SERVER TIME</p><div id="clock" class="big">—</div><p class="hint">Not a browser timer. Every change is a new event.</p><div class="flow"><span>Server</span><span aria-hidden="true">→</span><span>EventSource</span><span aria-hidden="true">→</span><span>This clock</span></div></article>
+          <article class="card"><p class="eyebrow">THE BROWSER SIDE</p><h3>A few lines. A live connection.</h3><pre>const stream = new EventSource(
+  "/events?channels=clock"
+);
+stream.addEventListener("tick", (event) =&gt; {
+  const data = JSON.parse(event.data);
+  clock.textContent = data.time;
+});</pre><p class="hint">Try Disconnect above. The clock freezes. Connect starts a new stream.</p></article>
+        </div>
+      </section>
+      <section id="panel-stocks" data-panel="stocks" aria-label="Stocks example" hidden>
+        <div class="section-heading"><div><p class="eyebrow">UPDATES WHEN THEY HAPPEN</p><h2>A market that comes to you.</h2></div><span class="badge">stock · irregular updates</span></div>
+        <div class="panel-grid">
+          <article class="card"><h3>Market watch <span class="dim">/ simulated</span></h3><table id="stocks"><thead><tr><th>Symbol</th><th>Price</th><th>Change</th></tr></thead><tbody></tbody></table><p class="hint">Waiting for prices? Updates arrive at random intervals. These are fictional stocks, not market data.</p></article>
+          <article class="card lesson"><p class="eyebrow">THE TAKEAWAY</p><h3>No need to keep asking.</h3><p>Unlike polling, the browser does not repeatedly request a new price. The server sends a <code>stock</code> event when a price changes.</p><p>Different event names can share one stream. The browser chooses which listener handles each update.</p><div class="callout">Same connection pattern. Different data.</div></article>
+        </div>
+      </section>
+      <section id="panel-chat" data-panel="chat" aria-label="Chat example" hidden>
+        <div class="section-heading"><div><p class="eyebrow">ONE MESSAGE. EVERY LISTENER.</p><h2>Try a conversation across tabs.</h2></div><span class="badge">chat · broadcast</span></div>
+        <div class="panel-grid">
+          <article class="card"><h3>The shared room</h3><ul id="chat" aria-label="Chat messages" aria-live="polite"></ul><form id="chatform"><input id="chatname" placeholder="Your name" aria-label="Your name" maxlength="40" /><input id="chattext" placeholder="Write a message…" aria-label="Message" maxlength="200" required /><button type="submit">Send message</button></form><p id="chatfeedback" role="status"></p></article>
+          <article class="card lesson"><p class="eyebrow">TRY IT TOGETHER</p><h3>Two tabs. One shared stream of messages.</h3><ol><li>Open this page in a second browser tab.</li><li>Select Chat in both tabs.</li><li>Send a message and watch it appear in both.</li></ol><div class="callout">Sending uses a separate HTTP POST. Receiving uses SSE. SSE itself is one-way.</div><p class="hint">Local demo only: messages are not saved and there are no private rooms.</p></article>
+        </div>
+      </section>
+      <section id="panel-connection" data-panel="connection" aria-label="Connection example" hidden>
+        <div class="section-heading"><div><p class="eyebrow">UNDER THE HOOD</p><h2>See the connection's story.</h2></div><span class="badge">lifecycle · retries</span></div>
+        <div class="panel-grid">
+          <article class="card"><h3>Connection log</h3><ul id="connlog" class="log"></ul></article>
+          <article class="card lesson"><h3>Choose your feeds</h3><p>Each page opens its own stream with only its example's feed. This page starts with the clock; change the checkboxes to see the stream URL change in Network.</p><div class="feed-controls"><label><input type="checkbox" value="clock" checked /> Clock</label><label><input type="checkbox" value="stocks" /> Stocks</label><label><input type="checkbox" value="chat" /> Chat</label></div><p class="hint">Changing feeds opens a new stream, unless you deliberately disconnected.</p><div class="callout">Stop and restart the server to test automatic retry. Disconnect intentionally stops retries. This demo does not replay missed events.</div></article>
+        </div>
+      </section>
+      <section class="card event-card">
+        <div class="section-heading"><div><p class="eyebrow">THE SAME FORMAT, IN EVERY EXAMPLE</p><h3>Events arriving in your browser</h3></div><span class="badge">newest first</span></div>
+        <p class="legend"><code>event:</code> the name · <code>data:</code> the content · <code>id:</code> the identifier · blank line ends an event</p>
+        <pre id="inspector" aria-label="Recent received events"></pre>
+        <p class="hint">Reconstructed from EventSource, not a raw capture. For raw text: <code>curl -N "http://127.0.0.1:8765/events?channels=clock"</code></p>
+      </section>
+    </main>
+    <footer><span><strong id="count">0</strong> events received</span><span>Last ID <strong id="lastid">—</strong></span><span><strong id="reconnects">0</strong> retry attempts</span><code id="streamurl">/events?channels=clock</code></footer>
+  </div>
+  <script src="/static/app.js"></script>
+</body>
+</html>

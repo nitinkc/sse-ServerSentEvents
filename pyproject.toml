@@ -1,0 +1,17 @@
+[project]
+name = "sse-101"
+version = "0.1.0"
+description = "Server-Sent Events 101 — a zero-dependency SSE demo plus an MkDocs course"
+requires-python = ">=3.9"
+dependencies = [
+    "mkdocs-material>=9.5",
+    "mkdocs-mermaid2-plugin>=1.2.3",
+    "mkdocs-quiz>=1.7.1",
+]
+
+[project.optional-dependencies]
+# The demo server itself is stdlib-only. Nothing here is needed to run it.
+dev = []
+
+[tool.uv]
+package = false

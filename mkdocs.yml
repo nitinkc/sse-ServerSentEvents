@@ -1,0 +1,101 @@
+site_name: SSE - Server-Sent Events from Scratch
+site_description: A zero-to-working-knowledge course on Server-Sent Events, with a runnable stdlib-only.
+repo_url: https://github.com/nitinkc/sse-ServerSentEvents
+docs_dir: docs
+site_url: https://nitinkc.github.io/sse-ServerSentEvents/
+
+theme:
+  name: material
+  features:
+    # Navigation
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.path
+    - navigation.top # Back-to-top button
+    - navigation.footer # Prev/Next page links
+    # navigation.instant disabled — breaks live reload (re-enable for production builds)
+    # - navigation.instant
+    # - navigation.instant.progress
+    # Search
+    - search.suggest
+    - search.highlight
+    - search.share
+    # Content
+    - content.code.copy
+    - content.code.annotate # (1) style code annotations
+    - content.tabs.link # Sync tabs across page
+    - content.tooltips
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: brown
+      accent: blue
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: brown
+      accent: blue
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+
+plugins:
+  - search:
+      lang: en
+  - mkdocs_quiz
+  - mermaid2
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      use_pygments: true
+      guess_lang: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - toc:
+      permalink: true
+      title: On this page
+  - abbr
+  - attr_list
+  - md_in_html
+  - pymdownx.snippets:
+      base_path: docs
+  - tables
+
+nav:
+  - Home: index.md
+  - Learn:
+      - What is SSE?: learn/what-is-sse.md
+      - The wire protocol: learn/protocol.md
+      - The EventSource API: learn/eventsource-api.md
+      - Reconnection & heartbeats: learn/reliability.md
+      - SSE vs the alternatives: learn/alternatives.md
+  - Build:
+      - Quickstart: build/quickstart.md
+      - Anatomy of the server: build/server-anatomy.md
+      - Demo walkthrough: build/walkthrough.md
+  - Ship:
+      - Production checklist: ship/production.md
+  - Reference:
+      - Cheatsheet: reference/cheatsheet.md
+      - Final quiz: reference/quiz.md
+      - Exercises: reference/exercises.md
